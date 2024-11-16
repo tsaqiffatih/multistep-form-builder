@@ -32,16 +32,20 @@
               class="w-full px-3 py-2 border rounded"
             ></textarea>
             <div v-if="field.type === 'radio'" class="flex gap-2">
-              <label v-for="option in field.options" :key="option.value">
+              <label
+                v-for="option in field.options"
+                :key="isObject(option) ? option.value : option"
+              >
                 <input
                   type="radio"
-                  :value="option.value"
+                  :value="isObject(option) ? option.value : option"
                   v-model="formData[field.label]"
                   class="mr-2"
                 />
-                {{ option.label }}
+                {{ isObject(option) ? option.label : option }}
               </label>
             </div>
+
             <select
               v-if="field.type === 'autocomplete'"
               v-model="formData[field.label]"
@@ -49,10 +53,10 @@
             >
               <option
                 v-for="option in field.options"
-                :key="option"
-                :value="option"
+                :key="isObject(option) ? option.value : option"
+                :value="isObject(option) ? option.value : option"
               >
-                {{ option }}
+                {{ isObject(option) ? option.label : option }}
               </option>
             </select>
             <p v-if="errors[field.label]" class="text-red-500 text-sm">
@@ -112,6 +116,10 @@ export default defineComponent({
     const config = formConfig;
 
     const currentForm = computed(() => config[currentStep.value - 1]);
+
+    const isObject = (item: any): item is { label: string; value: string } => {
+      return typeof item === "object" && item !== null && "label" in item && "value" in item;
+    };
 
     const nextStep = () => {
       if (currentStep.value < config.length) {
@@ -174,6 +182,7 @@ export default defineComponent({
       validateAndNext,
       handleSubmit,
       formConfig: config,
+      isObject
     };
   },
 });
